@@ -78,29 +78,17 @@
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
+import io
 import os
-import tempfile
 from flask import (
     Flask, request, redirect, url_for,
     render_template, send_file, flash
 )
-import asposeslidescloud
-from asposeslidescloud.configuration import Configuration
-from asposeslidescloud.apis.slides_api import SlidesApi
-from asposeslidescloud.models.export_format import ExportFormat
+import aspose.slides as slides
+import aspose.pydrawing as drawing  # required on some platforms
 
 app = Flask(__name__)
 app.secret_key = 'replace-with-a-secure-random-key'
-
-# Configure Aspose.Slides Cloud
-config = Configuration()
-config.app_sid = '6d8ac5da-fa84-4b87-833b-ba1777b64e46'       # ← your Aspose Client Id
-config.app_key = '37af15915c9960e2984aedb7b83f0b35'   # ← your Aspose Client Secret     # :contentReference[oaicite:2]{index=2}
-slides_api = SlidesApi(config)
-# Ensure upload folder exists
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -110,46 +98,25 @@ def index():
             flash('Please upload a valid .ppt file.')
             return redirect(request.url)
 
-        # Read file bytes
-        content = uploaded.read()
-        try:
-            # new: returns bytes
-            response_bytes = slides_api.convert_stream(
-                document=content,
-                format=ExportFormat.PPTX
-            )
+        # 1) Read the uploaded PPT into memory
+        in_bytes = uploaded.read()
+        in_stream = io.BytesIO(in_bytes)
 
-        except Exception as e:
-            flash(f'Conversion failed: {e}')
-            return redirect(request.url)
+        # 2) Convert PPT → PPTX in-memory
+        out_stream = io.BytesIO()
+        with slides.Presentation(in_stream) as pres:           # :contentReference[oaicite:2]{index=2}
+            pres.save(out_stream, slides.export.SaveFormat.PPTX) # :contentReference[oaicite:3]{index=3}
 
-        # Save the returned PPTX bytes to a temp file
-        fd, out_path = tempfile.mkstemp(suffix='.pptx', dir=UPLOAD_FOLDER)
-        os.close(fd)
-        with open(out_path, 'wb') as f:
-            #f.write(response)
-            # latin-1 will map each character code 0–255 → same byte value.
-            #f.write(response.encode('latin-1'))
-            f.write(response_bytes)
-            
-
-        # Redirect to download page
-        return redirect(url_for('result', fname=os.path.basename(out_path)))
+        # 3) Stream the result back to the user
+        out_stream.seek(0)
+        return send_file(
+            out_stream,
+            as_attachment=True,
+            download_name=os.path.splitext(uploaded.filename)[0] + '.pptx',
+            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        )
 
     return render_template('index.html')
-
-@app.route('/result/<fname>')
-def result(fname):
-    out_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
-    if not os.path.exists(out_path):
-        flash('File not found.')
-        return redirect(url_for('index'))
-    return render_template('result.html', filename=fname)
-
-@app.route('/download/<filename>')
-def download(filename):
-    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
