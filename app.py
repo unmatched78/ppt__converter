@@ -129,7 +129,8 @@ def index():
         with open(out_path, 'wb') as f:
             #f.write(response)
             # latin-1 will map each character code 0–255 → same byte value.
-            f.write(response.encode('latin-1'))
+            #f.write(response.encode('latin-1'))
+            f.write(response_bytes)
             
 
         # Redirect to download page
