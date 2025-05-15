@@ -113,11 +113,11 @@ def index():
         # Read file bytes
         content = uploaded.read()
         try:
-            # Convert .ppt bytes to .pptx bytes via Aspose Cloud
-            response = slides_api.convert(
+            # new: returns bytes
+            response_bytes = slides_api.convert_stream(
                 document=content,
                 format=ExportFormat.PPTX
-            )  # :contentReference[oaicite:3]{index=3}
+            )
 
         except Exception as e:
             flash(f'Conversion failed: {e}')
