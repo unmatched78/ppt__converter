@@ -2,3 +2,4 @@ flask
 pywin32 
 python-pptx
 gunicorn
+asposeslidescloud
