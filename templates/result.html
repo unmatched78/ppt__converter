@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Conversion Complete</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* Base reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #eef2ff;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: #2c5282;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+    a.button {
+      display: inline-block;
+      background: #3182ce;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: background 0.2s;
+      margin: 0.5rem;
+    }
+    a.button:hover {
+      background: #2b6cb0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✅ Conversion Successful!</h1>
+    <p>Your file is ready: <strong>{{ filename }}</strong></p>
+    <a class="button" href="{{ url_for('download', filename=filename) }}">Download .pptx</a>
+    <a class="button" href="{{ url_for('index') }}">Convert Another</a>
+  </div>
+</body>
+</html>
